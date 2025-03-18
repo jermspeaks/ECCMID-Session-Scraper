@@ -1,0 +1,20 @@
+# Node.js
+node_modules/
+npm-debug.log
+package-lock.json
+
+# IDE & OS specific files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Large data files
+raw_data/*.html
+raw_data/session_details/*.html
+
+# Output files (they can be regenerated)
+# Uncomment these if you don't want to track the output files
+# presenter_table.md
+# presenter_data.csv 

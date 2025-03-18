@@ -1,0 +1,21 @@
+{
+  "name": "eccmid-session-scraper",
+  "version": "1.0.0",
+  "description": "Tool to extract presenter information from ECCMID 2025 sessions",
+  "main": "src/extract_presenters.js",
+  "scripts": {
+    "start": "node src/extract_presenters.js",
+    "offline": "node src/offline_processor.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "scraper",
+    "ECCMID",
+    "presenters"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^22.0.0"
+  }
+} 

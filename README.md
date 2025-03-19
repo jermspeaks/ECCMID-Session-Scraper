@@ -71,15 +71,16 @@ The output is organized by session, with each row containing:
 - Time: The session time range (e.g., 08:30 - 10:30)
 - Session: The session reference code (e.g., EW001)
 - Session Title: The full title of the session
-- Chairs: All session chairs with their affiliations
+- Chairs: All session chairs 
 - Presenters: All speakers grouped by their presentation titles
+- Organizing Groups: The organizations that arranged the session (e.g., "ESCMID Study Group for Implant-associated Infections")
 
 This organized format makes it easy to see all information about a session at a glance and prevents duplication of session data in the output.
 
 ## Example Output
 
 ```
-| Date | Time | Session | Session Title | Chairs | Presenters |
-|------|------|---------|---------------|--------|------------|
-| 11/04 | 08:30 - 10:30 | EW001 | Surgical site infections | Gabriel BIRGAND (France), Efthymia GIANNITSIOTI (Greece) | **Evolving antimicrobial resistance**: Camilla RODRIGUES (India)<br>**Role of decolonisation**: Prasannakumar PALANIKUMAR (India) |
+| Date | Time | Session | Session Title | Chairs | Presenters | Organizing Groups |
+|------|------|---------|---------------|--------|------------|-------------------|
+| 11/04 | 08:30 - 10:30 | EW001 | Surgical site infections | Gabriel BIRGAND, Efthymia GIANNITSIOTI | **Evolving antimicrobial resistance**: Camilla RODRIGUES<br>**Role of decolonisation**: Prasannakumar PALANIKUMAR | ESCMID PK/PD of Anti-Infectives Study Group (EPASG), ESCMID Study Group for Implant-associated Infections (ESGIAI) |
 ``` 

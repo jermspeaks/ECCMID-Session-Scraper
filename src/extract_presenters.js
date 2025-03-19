@@ -81,6 +81,27 @@ function extractSessionType(document) {
 }
 
 /**
+ * Extract organization information from HTML content
+ */
+function extractOrganization(document) {
+  try {
+    // Find the "Organised by" section
+    const organizedByText = Array.from(document.querySelectorAll('.modal-session-organized-by'))
+      .find(el => el.textContent.trim().includes('Organised by'));
+    
+    if (organizedByText) {
+      const strongElement = organizedByText.querySelector('strong');
+      return strongElement ? strongElement.textContent.trim() : '';
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Error extracting organization information:', error);
+    return '';
+  }
+}
+
+/**
  * Extract chairs/moderators from HTML content
  */
 function extractChairs(document, sessionRef, sessionTitle, dateTime) {
@@ -205,14 +226,22 @@ function processSessionFile(filePath) {
     const sessionCategory = extractSessionCategory(document);
     const sessionType = extractSessionType(document);
     
+    // Extract organization information
+    const organization = extractOrganization(document);
+    
     console.log(`Processing ${sessionRef}: ${sessionTitle}`);
     
     // Extract chairs and speakers
     const chairs = extractChairs(document, sessionRef, sessionTitle, dateTimeObj);
     const speakers = extractSpeakers(document, sessionRef, sessionTitle, dateTimeObj);
     
-    // Combine all presenters
-    return [...chairs, ...speakers];
+    // Add organization to each presenter
+    const presenters = [...chairs, ...speakers].map(presenter => ({
+      ...presenter,
+      organization
+    }));
+    
+    return presenters;
   } catch (error) {
     console.error(`Error processing session file ${filePath}:`, error);
     return [];
@@ -260,9 +289,15 @@ function groupPresentersBySession(presenters) {
         time: presenter.dateTime.time,
         sessionRef: presenter.sessionRef,
         sessionTitle: presenter.sessionTitle,
+        organization: presenter.organization || '',
         chairs: [],
         speakers: []
       };
+    }
+    
+    // Ensure we capture the organization if it wasn't set previously
+    if (!sessions[sessionKey].organization && presenter.organization) {
+      sessions[sessionKey].organization = presenter.organization;
     }
     
     if (presenter.role === 'Chair') {
@@ -289,11 +324,11 @@ function generateMarkdownTable(presenters) {
   
   // Generate markdown table
   let markdown = '# ECCMID 2025 Presenter Information\n\n';
-  markdown += '| Date | Time | Session | Session Title | Chairs | Presenters |\n';
-  markdown += '|------|------|---------|---------------|--------|------------|\n';
+  markdown += '| Date | Time | Session | Session Title | Chairs | Presenters | Organizing Groups |\n';
+  markdown += '|------|------|---------|---------------|--------|------------|-------------------|\n';
   
   sessions.forEach(session => {
-    const chairsList = session.chairs.map(chair => `${chair.fullName} (${chair.affiliation})`).join(', ');
+    const chairsList = session.chairs.map(chair => `${chair.fullName}`).join(', ');
     
     // Group speakers by presentation title
     const presentationMap = {};
@@ -307,12 +342,14 @@ function generateMarkdownTable(presenters) {
     // Format speakers with their presentations
     const speakersList = Object.entries(presentationMap)
       .map(([title, speakers]) => {
-        const speakerNames = speakers.map(s => `${s.fullName} (${s.affiliation})`).join(', ');
+        const speakerNames = speakers.map(s => `${s.fullName}`).join(', ');
         return `**${title}**: ${speakerNames}`;
       })
       .join('<br>');
     
-    markdown += `| ${session.date} | ${session.time} | ${session.sessionRef} | ${session.sessionTitle} | ${chairsList} | ${speakersList} |\n`;
+    const organization = session.organization || 'Not specified';
+    
+    markdown += `| ${session.date} | ${session.time} | ${session.sessionRef} | ${session.sessionTitle} | ${chairsList} | ${speakersList} | ${organization} |\n`;
   });
   
   return markdown;
@@ -326,10 +363,10 @@ function generateCSV(presenters) {
   const sessions = groupPresentersBySession(presenters);
   
   // Generate CSV content
-  let csv = 'Date,Time,Session,Session Title,Chairs,Presenters\n';
+  let csv = 'Date,Time,Session,Session Title,Chairs,Presenters,Organizing Groups\n';
   
   sessions.forEach(session => {
-    const chairsList = session.chairs.map(chair => `${chair.fullName} (${chair.affiliation})`).join('; ');
+    const chairsList = session.chairs.map(chair => `${chair.fullName}`).join('; ');
     
     // Group speakers by presentation title
     const presentationMap = {};
@@ -343,7 +380,7 @@ function generateCSV(presenters) {
     // Format speakers with their presentations
     const speakersList = Object.entries(presentationMap)
       .map(([title, speakers]) => {
-        const speakerNames = speakers.map(s => `${s.fullName} (${s.affiliation})`).join('; ');
+        const speakerNames = speakers.map(s => `${s.fullName}`).join('; ');
         return `${title}: ${speakerNames}`;
       })
       .join(' | ');
@@ -352,8 +389,9 @@ function generateCSV(presenters) {
     const escapedSessionTitle = `"${session.sessionTitle.replace(/"/g, '""')}"`;
     const escapedChairsList = `"${chairsList.replace(/"/g, '""')}"`;
     const escapedSpeakersList = `"${speakersList.replace(/"/g, '""')}"`;
+    const escapedOrganization = `"${(session.organization || 'Not specified').replace(/"/g, '""')}"`;
     
-    csv += `${session.date},${session.time},${session.sessionRef},${escapedSessionTitle},${escapedChairsList},${escapedSpeakersList}\n`;
+    csv += `${session.date},${session.time},${session.sessionRef},${escapedSessionTitle},${escapedChairsList},${escapedSpeakersList},${escapedOrganization}\n`;
   });
   
   return csv;
